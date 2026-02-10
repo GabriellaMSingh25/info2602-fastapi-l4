@@ -1,5 +1,6 @@
-import typer
+from venv import typer
 import csv
+
 from tabulate import tabulate
 from sqlmodel import select
 from app.database import create_db_and_tables, get_cli_session, drop_all
