@@ -78,3 +78,53 @@ def update_todo(id:int, db:SessionDep, user:AuthDep):
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="An error occurred while deleting an item",
         )
+
+@todo_router.post('/todo/{todo_id}/category/{cat_id}', response_model=TodoResponse)
+def add_category_to_todo(todo_id:int, cat_id:int, db:SessionDep, user:AuthDep):
+    todo = db.exec(select(Todo).where(Todo.id==todo_id, Todo.user_id==user.id)).one_or_none()
+    category = db.exec(select(Category).where(Category.id==cat_id, Category.user_id==user.id)).one_or_none()
+    if not todo or not category:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized",
+        )
+    if category in todo.categories:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Category already assigned to todo",
+        )
+    try:
+        todo.categories.append(category)
+        db.add(todo)
+        db.commit()
+        return todo
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="An error occurred while updating an item",
+        )
+    
+@todo_router.delete('/todo/{todo_id}/category/{cat_id}', response_model=TodoResponse)
+def remove_category_from_todo(todo_id:int, cat_id:int, db:SessionDep, user:AuthDep):
+    todo = db.exec(select(Todo).where(Todo.id==todo_id, Todo.user_id==user.id)).one_or_none()
+    category = db.exec(select(Category).where(Category.id==cat_id, Category.user_id==user.id)).one_or_none()
+    if not todo or not category:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized",
+        )
+    if category not in todo.categories:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Category not assigned to todo",
+        )
+    try:
+        todo.categories.remove(category)
+        db.add(todo)
+        db.commit()
+        return todo
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="An error occurred while updating an item",
+        )

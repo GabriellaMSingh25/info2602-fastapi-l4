@@ -55,6 +55,7 @@ class TodoResponse(SQLModel):
     id: Optional[int] = Field(primary_key=True, default=None)
     text:str
     done: bool = False
+    categories:list[str] = []
 
 class TodoUpdate(SQLModel):
     text: Optional[str] = None
@@ -69,3 +70,10 @@ class UserResponse(SQLModel):
     username: str
     email: EmailStr
     role: str
+
+class CategoryResponse(SQLModel):
+    id: Optional[int] = Field(primary_key=True, default=None)
+    text:str
+
+class CategoryCreate(SQLModel):
+    text:str
